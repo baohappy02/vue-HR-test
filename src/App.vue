@@ -86,7 +86,7 @@ function onHashChange () {
     <p><h1>Test Instructions</h1>
     <ol class = "instructionsList" style="text-align:center;">
 	<li>Make this page responsive (including these instructions).</li>
-	<li>Create a new (seperate) page that tracks the total number of created to-do items on this page.</li>
+	<li>Create a new (seperate) page that tracks the total number of created to-do items on this page. The total number of created to-do items displayed on the new page must not reset when I clear them on page 1. They should be persistent.</li>
 	<li>Fix any of the generic design and formatting errors introduced in this document.</li>
     </ol>
   </section>
