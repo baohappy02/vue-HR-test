@@ -32,8 +32,14 @@ function toggleAll(e) {
   todos.value.forEach((todo) => (todo.completed = e.target.checked));
 }
 
+function sanitizeInput(input) {
+  const div = document.createElement("div");
+  div.appendChild(document.createTextNode(input));
+  return div.innerHTML;
+}
+
 function addTodo(e) {
-  const value = e.target.value.trim();
+  const value = sanitizeInput(e.target.value.trim());
   if (value) {
     todos.value.push({
       id: Date.now(),
