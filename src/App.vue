@@ -83,7 +83,7 @@ function onHashChange() {
 <template>
   <div class="container1" style="width: 1220px !important">
     <section class="instructions1" style="float: right">
-      <h1>Test Instructions</h1>
+      <h1 class="">Test Instructions</h1>
       <ol class="instructionsList" style="text-align: center">
         <li>Make this page responsive (including these instructions).</li>
         <li>
@@ -105,7 +105,8 @@ function onHashChange() {
           class="new-todo"
           autofocus
           placeholder="What needs to be done?"
-          @keyup.enter="addTodo" />
+          @keyup.enter="addTodo"
+        />
       </header>
       <section class="main" v-show="todos.length">
         <input
@@ -113,7 +114,8 @@ function onHashChange() {
           class="toggle-all"
           type="checkbox"
           :checked="remaining === 0"
-          @change="toggleAll" />
+          @change="toggleAll"
+        />
         <label for="toggle-all">Mark all as complete</label>
         <ul class="todo-list">
           <li
@@ -123,7 +125,8 @@ function onHashChange() {
             :class="{
               completed: todo.completed,
               editing: todo === editedTodo,
-            }">
+            }"
+          >
             <div class="view">
               <input class="toggle" type="checkbox" v-model="todo.completed" />
               <label @dblclick="editTodo(todo)">{{ todo.title }}</label>
@@ -137,7 +140,8 @@ function onHashChange() {
               @vue:mounted="({ el }) => el.focus()"
               @blur="doneEdit(todo)"
               @keyup.enter="doneEdit(todo)"
-              @keyup.escape="cancelEdit(todo)" />
+              @keyup.escape="cancelEdit(todo)"
+            />
           </li>
         </ul>
       </section>
@@ -166,14 +170,11 @@ function onHashChange() {
         <button
           class="clear-completed"
           @click="removeCompleted"
-          v-show="todos.length > remaining">
+          v-show="todos.length > remaining"
+        >
           Clear completed
         </button>
       </footer>
     </section>
   </div>
 </template>
-
-<style>
-@import "assets/style.css";
-</style>
