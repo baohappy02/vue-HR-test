@@ -8,11 +8,11 @@
 
 ## List changes
 
-// install dependencies
+ -- install dependencies
 
 - pnpm install
 
-// run local
+ -- run local
 
 - pnpm serve
 

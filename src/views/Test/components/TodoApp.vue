@@ -1,149 +1,177 @@
-<script setup>
-import { ref, computed, watchEffect } from "vue";
+<script setup lang="ts">
+import { computed, ref, watchEffect, onMounted } from "vue";
+import { useStore } from "vuex";
+import type { Todo, State } from "@/store";
 
-const STORAGE_KEY = "vue-todomvc";
+const store = useStore<State>();
 
-const filters = {
-  all: (todos) => todos,
-  active: (todos) => todos.filter((todo) => !todo.completed),
-  completed: (todos) => todos.filter((todo) => todo.completed),
-};
+// Derived state using Vuex getters
+const todos = computed(() => store.state.todos);
+const filteredTodos = computed(() => store.getters.filteredTodos);
+const remaining = computed(() => store.getters.remaining);
+const visibility = ref(store.state.visibility);
 
-// state
-const todos = ref([]);
-
-try {
-  todos.value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-} catch (error) {
-  console.error("Failed to parse todos from localStorage:", error);
-}
-
-const visibility = ref("all");
-const editedTodo = ref();
-
-// derived state
-const filteredTodos = computed(() => filters[visibility.value](todos.value));
-const remaining = computed(() => filters.active(todos.value).length);
-
-// persist state
+// Watch for changes in Vuex state to update visibility
 watchEffect(() => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(todos.value));
-  } catch (error) {
-    console.error("Failed to save todos to localStorage:", error);
-  }
+  store.commit(
+    "setVisibility",
+    visibility.value as "all" | "active" | "completed"
+  );
 });
 
-function toggleAll(e) {
-  todos.value = todos.value.map(todo => ({
-    ...todo,
-    completed: e.target.checked
-  }));
-}
+// Actions and mutations
+const toggleAll = (e: Event) => {
+  const target = e.target as HTMLInputElement;
+  store.commit("toggleAll", target.checked);
+};
 
-function sanitizeInput(input) {
+// Sanitize input to prevent XSS
+const sanitizeInput = (input: string): string => {
   const div = document.createElement("div");
   div.appendChild(document.createTextNode(input));
   return div.innerHTML;
-}
+};
 
-function addTodo(e) {
-  const value = sanitizeInput(e.target.value.trim());
+const addTodo = (e: KeyboardEvent) => {
+  const input = e.target as HTMLInputElement;
+  const value = sanitizeInput(input.value.trim());
   if (value) {
-    todos.value.push({
+    store.commit("addTodo", {
       id: Date.now(),
       title: value,
       completed: false,
     });
-    e.target.value = "";
+    input.value = "";
+    store.dispatch("persistTodos");
   }
-}
+};
 
-function removeTodo(todo) {
-  todos.value.splice(todos.value.indexOf(todo), 1);
-}
+const removeTodo = (todo: Todo) => {
+  store.commit("removeTodo", todo);
+  store.dispatch("persistTodos");
+};
 
-let beforeEditCache = "";
-function editTodo(todo) {
-  beforeEditCache = todo.title;
-  editedTodo.value = todo;
-}
+const editTodo = (todo: Todo) => {
+  store.commit("setEditedTodo", todo);
+};
 
-function cancelEdit(todo) {
-  editedTodo.value = null;
-  todo.title = beforeEditCache;
-}
+const cancelEdit = (todo: Todo) => {
+  store.commit("cancelEdit", todo);
+};
 
-function doneEdit(todo) {
-  if (editedTodo.value) {
-    editedTodo.value = null;
-    todo.title = todo.title.trim();
-    if (!todo.title) removeTodo(todo);
+const doneEdit = (todo: Todo) => {
+  const editedTodo = store.state.editedTodo;
+  if (editedTodo) {
+    store.commit("updateTodoTitle", { todo, title: todo.title.trim() });
+    store.commit("setEditedTodo", null);
+    store.dispatch("persistTodos");
   }
-}
+};
 
-function removeCompleted() {
-  todos.value = filters.active(todos.value);
-}
+const removeCompleted = () => {
+  store.commit("removeCompleted");
+  store.dispatch("persistTodos");
+};
 
-// handle routing
-window.addEventListener("hashchange", onHashChange);
-onHashChange();
-
-function onHashChange() {
+// Handle routing
+const onHashChange = () => {
   const route = window.location.hash.replace(/#\/?/, "");
-  if (filters[route]) {
-    visibility.value = route;
+  if (["all", "active", "completed"].includes(route)) {
+    visibility.value = route as "all" | "active" | "completed";
   } else {
     window.location.hash = "";
     visibility.value = "all";
   }
-}
+};
+
+onMounted(() => {
+  store.dispatch("initializeTodos");
+  window.addEventListener("hashchange", onHashChange);
+  onHashChange();
+});
 </script>
 
 <template>
   <section
     class="mx-auto lg:mt-10 lg:max-w-[80%] lg:rounded-lg lg:border border-cus3 bg-white p-5 pb-7 lg:p-6"
   >
-    <header class="header">
-      <h1>To Do List</h1>
-      <input
-        class="new-todo"
-        autofocus
-        placeholder="What needs to be done?"
-        @keyup.enter="addTodo"
-      />
+    <header class="">
+      <h1 class="text-2xl font-bold text-center lg:text-left">
+        To Do List
+
+        <span v-show="todos.length" class="text-[12px]">
+          (<strong class="text-sm">{{ remaining }}</strong>
+          <span class="text-[12px]"
+            >{{ remaining === 1 ? " item" : " items" }} left</span
+          >)
+        </span>
+      </h1>
+
+      <div v-show="todos.length">
+        <ul>
+          <li>
+            <a href="#all" :class="{ selected: visibility === 'all' }">All</a>
+          </li>
+          <li>
+            <a href="#active" :class="{ selected: visibility === 'active' }"
+              >Active</a
+            >
+          </li>
+          <li>
+            <a
+              href="#completed"
+              :class="{ selected: visibility === 'completed' }"
+              >Completed</a
+            >
+          </li>
+        </ul>
+        <button @click="removeCompleted" v-show="todos.length > remaining">
+          Clear completed
+        </button>
+      </div>
     </header>
-    <section class="main" v-show="todos.length">
-      <input
-        id="toggle-all"
-        class="toggle-all"
-        type="checkbox"
-        :checked="remaining === 0"
-        @change="toggleAll"
-      />
-      <label for="toggle-all">Mark all as complete</label>
-      <ul class="todo-list">
+
+    <input
+      class=""
+      autofocus
+      placeholder="What needs to be done?"
+      @keyup.enter="addTodo"
+    />
+
+    <section class="" v-show="todos.length">
+      <label
+        >Mark all as complete
+        <input
+          class=""
+          type="checkbox"
+          :checked="remaining === 0"
+          @change="toggleAll"
+      /></label>
+      <ul class="">
         <li
           v-for="todo in filteredTodos"
-          class="todo"
+          class=""
           :key="todo.id"
           :class="{
             completed: todo.completed,
-            editing: todo === editedTodo,
+            editing: todo === store.state.editedTodo,
           }"
         >
           <div class="view">
-            <input class="toggle" type="checkbox" v-model="todo.completed" />
+            <input
+              class="toggle"
+              type="checkbox"
+              v-model="todo.completed"
+              @change="store.dispatch('persistTodos')"
+            />
             <label @dblclick="editTodo(todo)">{{ todo.title }}</label>
             <button class="destroy" @click="removeTodo(todo)"></button>
           </div>
           <input
-            v-if="todo === editedTodo"
+            v-if="todo === store.state.editedTodo"
             class="edit"
             type="text"
             v-model="todo.title"
-            @vue:mounted="({ el }) => el.focus()"
             @blur="doneEdit(todo)"
             @keyup.enter="doneEdit(todo)"
             @keyup.escape="cancelEdit(todo)"
@@ -151,35 +179,5 @@ function onHashChange() {
         </li>
       </ul>
     </section>
-    <footer class="footer" v-show="todos.length">
-      <span class="todo-count">
-        <strong>{{ remaining }}</strong>
-        <span>{{ remaining === 1 ? " items" : " itemss" }} left</span>
-      </span>
-      <ul class="filters">
-        <li>
-          <a href="#/all" :class="{ selected: visibility === 'all' }">All</a>
-        </li>
-        <li>
-          <a href="#/active" :class="{ selected: visibility === 'active' }"
-            >Active</a
-          >
-        </li>
-        <li>
-          <a
-            href="#/completed"
-            :class="{ selected: visibility === 'completed' }"
-            >Completed</a
-          >
-        </li>
-      </ul>
-      <button
-        class="clear-completed"
-        @click="removeCompleted"
-        v-show="todos.length > remaining"
-      >
-        Clear completed
-      </button>
-    </footer>
   </section>
 </template>

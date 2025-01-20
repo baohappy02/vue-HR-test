@@ -12,7 +12,7 @@ export interface State {
   editedTodo: Todo | null;
 }
 
-type VisibilityFilter = "all" | "active" | "completed";
+export type VisibilityFilter = "all" | "active" | "completed";
 
 const STORAGE_KEY = "vue-todomvc";
 

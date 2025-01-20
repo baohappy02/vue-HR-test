@@ -3,7 +3,7 @@
     class="mx-auto lg:mt-10 lg:max-w-[80%] lg:rounded-lg lg:border border-cus3 bg-white p-5 pb-7 lg:p-6"
   >
     <h1 class="text-2xl font-bold text-center lg:text-left">
-      <a href="/test-instructions">Test Instructions</a>
+      <a href="#test-instructions">Test Instructions</a>
     </h1>
 
     <ol class="flex flex-col flex-wrap gap-2 pl-4 mt-3 list-decimal lg:pl-10">

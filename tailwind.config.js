@@ -8,6 +8,7 @@ module.exports = {
         cus2: "#E5D0AC",
         "cus2-hover": "#e0c391",
         cus3: "#e87878",
+        purple: "#6C63FF",
       },
     },
   },
