@@ -2,6 +2,7 @@
 import { computed, ref, watchEffect, onMounted } from "vue";
 import { useStore } from "vuex";
 import type { Todo, State } from "@/store";
+import { VisibilityFilter } from "@/store"; // Import the enum
 
 const store = useStore<State>();
 
@@ -13,10 +14,7 @@ const visibility = ref(store.state.visibility);
 
 // Watch for changes in Vuex state to update visibility
 watchEffect(() => {
-  store.commit(
-    "setVisibility",
-    visibility.value as "all" | "active" | "completed"
-  );
+  store.commit("setVisibility", visibility.value as VisibilityFilter);
 });
 
 // Actions and mutations
@@ -76,11 +74,12 @@ const removeCompleted = () => {
 // Handle routing
 const onHashChange = () => {
   const route = window.location.hash.replace(/#\/?/, "");
-  if (["all", "active", "completed"].includes(route)) {
-    visibility.value = route as "all" | "active" | "completed";
+
+  if (Object.values(VisibilityFilter).includes(route as VisibilityFilter)) {
+    visibility.value = route as VisibilityFilter;
   } else {
     window.location.hash = "";
-    visibility.value = "all";
+    visibility.value = VisibilityFilter.All;
   }
 };
 
@@ -95,7 +94,7 @@ onMounted(() => {
   <section
     class="mx-auto lg:mt-10 lg:max-w-[80%] lg:rounded-lg lg:border border-cus3 bg-white p-5 pb-7 lg:p-6"
   >
-    <header class="">
+    <header class="flex flex-col flex-wrap gap-4">
       <h1 class="text-2xl font-bold text-center lg:text-left">
         To Do List
 
@@ -107,28 +106,32 @@ onMounted(() => {
         </span>
       </h1>
 
-      <div v-show="todos.length">
-        <ul>
-          <li>
-            <a href="#all" :class="{ selected: visibility === 'all' }">All</a>
-          </li>
-          <li>
-            <a href="#active" :class="{ selected: visibility === 'active' }"
-              >Active</a
-            >
-          </li>
-          <li>
-            <a
-              href="#completed"
-              :class="{ selected: visibility === 'completed' }"
-              >Completed</a
-            >
-          </li>
-        </ul>
-        <button @click="removeCompleted" v-show="todos.length > remaining">
-          Clear completed
-        </button>
-      </div>
+      <ul v-show="todos.length" class="flex items-center gap-3 ml-auto">
+        <li>
+          <a
+            href="#all"
+            :class="{ selected: visibility === VisibilityFilter.All }"
+            >All</a
+          >
+        </li>
+        <li>
+          <a
+            href="#active"
+            :class="{ selected: visibility === VisibilityFilter.Active }"
+            >Active</a
+          >
+        </li>
+        <li>
+          <a
+            href="#completed"
+            :class="{ selected: visibility === VisibilityFilter.Completed }"
+            >Completed</a
+          >
+        </li>
+      </ul>
+      <button @click="removeCompleted" v-show="todos.length > remaining">
+        Clear completed
+      </button>
     </header>
 
     <input

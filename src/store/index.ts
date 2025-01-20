@@ -12,25 +12,31 @@ export interface State {
   editedTodo: Todo | null;
 }
 
-export type VisibilityFilter = "all" | "active" | "completed";
+export enum VisibilityFilter {
+  All = "all",
+  Active = "active",
+  Completed = "completed",
+}
 
 const STORAGE_KEY = "vue-todomvc";
 
 const filters: Record<VisibilityFilter, (todos: Todo[]) => Todo[]> = {
-  all: (todos: Todo[]) => todos,
-  active: (todos: Todo[]) => todos.filter((todo) => !todo.completed),
-  completed: (todos: Todo[]) => todos.filter((todo) => todo.completed),
+  [VisibilityFilter.All]: (todos: Todo[]) => todos,
+  [VisibilityFilter.Active]: (todos: Todo[]) =>
+    todos.filter((todo) => !todo.completed),
+  [VisibilityFilter.Completed]: (todos: Todo[]) =>
+    todos.filter((todo) => todo.completed),
 };
 
 export default createStore<State>({
   state: {
     todos: [],
-    visibility: "all",
+    visibility: VisibilityFilter.All,
     editedTodo: null,
   },
   getters: {
     filteredTodos: (state) => filters[state.visibility](state.todos),
-    remaining: (state) => filters.active(state.todos).length,
+    remaining: (state) => filters[VisibilityFilter.Active](state.todos).length,
   },
   mutations: {
     setTodos: (state, todos: Todo[]) => {
@@ -72,7 +78,7 @@ export default createStore<State>({
       state.editedTodo = null;
     },
     removeCompleted: (state) => {
-      state.todos = filters.active(state.todos);
+      state.todos = filters[VisibilityFilter.Active](state.todos);
     },
   },
   actions: {
