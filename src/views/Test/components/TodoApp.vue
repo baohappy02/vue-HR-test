@@ -1,6 +1,5 @@
 <script setup>
 import { ref, computed, watchEffect } from "vue";
-import Test from "@/views/Test";
 
 const STORAGE_KEY = "vue-todomvc";
 
@@ -11,7 +10,14 @@ const filters = {
 };
 
 // state
-const todos = ref(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"));
+const todos = ref([]);
+
+try {
+  todos.value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+} catch (error) {
+  console.error("Failed to parse todos from localStorage:", error);
+}
+
 const visibility = ref("all");
 const editedTodo = ref();
 
@@ -19,17 +25,20 @@ const editedTodo = ref();
 const filteredTodos = computed(() => filters[visibility.value](todos.value));
 const remaining = computed(() => filters.active(todos.value).length);
 
-// handle routing
-window.addEventListener("hashchange", onHashChange);
-onHashChange();
-
 // persist state
 watchEffect(() => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(todos.value));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(todos.value));
+  } catch (error) {
+    console.error("Failed to save todos to localStorage:", error);
+  }
 });
 
 function toggleAll(e) {
-  todos.value.forEach((todo) => (todo.completed = e.target.checked));
+  todos.value = todos.value.map(todo => ({
+    ...todo,
+    completed: e.target.checked
+  }));
 }
 
 function sanitizeInput(input) {
@@ -76,6 +85,10 @@ function doneEdit(todo) {
 function removeCompleted() {
   todos.value = filters.active(todos.value);
 }
+
+// handle routing
+window.addEventListener("hashchange", onHashChange);
+onHashChange();
 
 function onHashChange() {
   const route = window.location.hash.replace(/#\/?/, "");
