@@ -23,3 +23,4 @@
 - Add router
 - Add tailwindcss
 - Split component + base layout
+- Update some basic UI todo app

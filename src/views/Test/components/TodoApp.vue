@@ -8,6 +8,7 @@ const store = useStore<State>();
 
 // Derived state using Vuex getters
 const todos = computed(() => store.state.todos);
+const editedTodo = computed(() => store.state.editedTodo);
 const filteredTodos = computed(() => store.getters.filteredTodos);
 const remaining = computed(() => store.getters.remaining);
 const visibility = ref(store.state.visibility);
@@ -21,6 +22,11 @@ watchEffect(() => {
 const toggleAll = (e: Event) => {
   const target = e.target as HTMLInputElement;
   store.commit("toggleAll", target.checked);
+};
+
+const __displayTagName = (tag: string): string => {
+  if (tag) return tag.charAt(0).toUpperCase() + tag.slice(1);
+  return "";
 };
 
 // Sanitize input to prevent XSS
@@ -94,7 +100,7 @@ onMounted(() => {
   <section
     class="mx-auto lg:mt-10 lg:max-w-[80%] lg:rounded-lg lg:border border-cus3 bg-white p-5 pb-7 lg:p-6"
   >
-    <header class="flex flex-col flex-wrap gap-4">
+    <header class="flex flex-col flex-wrap gap-2">
       <h1 class="text-2xl font-bold text-center lg:text-left">
         To Do List
 
@@ -107,78 +113,93 @@ onMounted(() => {
       </h1>
 
       <ul v-show="todos.length" class="flex items-center gap-3 ml-auto">
-        <li>
+        <li v-for="(filter, key) in Object.values(VisibilityFilter)" :key="key">
           <a
-            href="#all"
-            :class="{ selected: visibility === VisibilityFilter.All }"
-            >All</a
+            :href="'#' + filter"
+            :class="{
+              'text-purple hover:underline underline-offset-2':
+                visibility === filter,
+            }"
           >
-        </li>
-        <li>
-          <a
-            href="#active"
-            :class="{ selected: visibility === VisibilityFilter.Active }"
-            >Active</a
-          >
-        </li>
-        <li>
-          <a
-            href="#completed"
-            :class="{ selected: visibility === VisibilityFilter.Completed }"
-            >Completed</a
-          >
+            #{{ __displayTagName(filter) }}
+          </a>
         </li>
       </ul>
-      <button @click="removeCompleted" v-show="todos.length > remaining">
-        Clear completed
-      </button>
     </header>
 
     <input
-      class=""
+      class="w-full p-2 mt-3 border rounded-md outline-none focus:ring-2 ring-purple focus:rounded-md"
       autofocus
       placeholder="What needs to be done?"
       @keyup.enter="addTodo"
     />
 
-    <section class="" v-show="todos.length">
-      <label
-        >Mark all as complete
-        <input
-          class=""
-          type="checkbox"
-          :checked="remaining === 0"
-          @change="toggleAll"
-      /></label>
-      <ul class="">
+    <section v-show="todos.length" class="flex flex-col flex-wrap gap-3 mt-3" v>
+      <div class="flex flex-wrap items-center">
+        <label class="flex items-center gap-2">
+          <input
+            class="outline-none size-5"
+            type="checkbox"
+            :checked="remaining === 0"
+            @change="toggleAll"
+          />
+          <p class="font-medium text-md">Mark all as complete</p></label
+        >
+
+        <button
+          class="ml-auto font-medium underline text-md underline-offset-2 text-purple"
+          @click="removeCompleted"
+          v-show="todos.length > remaining"
+        >
+          Clear completed
+        </button>
+      </div>
+
+      <ul class="grid grid-cols-3 gap-8 mt-3">
         <li
-          v-for="todo in filteredTodos"
-          class=""
-          :key="todo.id"
+          v-for="(todo, key) in filteredTodos"
+          :key="key"
+          class="flex items-start w-full gap-2 h-max"
           :class="{
-            completed: todo.completed,
-            editing: todo === store.state.editedTodo,
+            'line-through opacity-25': todo.completed,
+            'text-purple-400': todo === editedTodo,
           }"
         >
-          <div class="view">
-            <input
-              class="toggle"
-              type="checkbox"
-              v-model="todo.completed"
-              @change="store.dispatch('persistTodos')"
-            />
-            <label @dblclick="editTodo(todo)">{{ todo.title }}</label>
-            <button class="destroy" @click="removeTodo(todo)"></button>
-          </div>
           <input
-            v-if="todo === store.state.editedTodo"
-            class="edit"
-            type="text"
-            v-model="todo.title"
-            @blur="doneEdit(todo)"
-            @keyup.enter="doneEdit(todo)"
-            @keyup.escape="cancelEdit(todo)"
+            class="flex-none mt-[6px] outline-none size-4"
+            type="checkbox"
+            v-model="todo.completed"
+            @change="store.dispatch('persistTodos')"
           />
+          <label @dblclick="editTodo(todo)" class="flex items-center w-full">
+            <textarea
+              class="disabled:hover:text-[12px] disabled:leading-5 disabled:hover:ring-0 resize-none hover:resize-y text-pretty text-[12px] outline-none hover:text-sm focus:text-sm w-full h-12 max-h-[100px] p-1 hover:ring-2 focus:ring-2 ring-purple focus:rounded-sm hover:rounded-sm"
+              :class="{
+                'text-purple-400 ring-2 ring-purple text-sm rounded-sm':
+                  todo === editedTodo,
+              }"
+              type="text"
+              v-model="todo.title"
+              :disabled="todo.completed"
+              @blur="doneEdit(todo)"
+              @keyup.enter="doneEdit(todo)"
+              @keyup.escape="cancelEdit(todo)"
+            />
+          </label>
+
+          <button class="ml-auto" @click="removeTodo(todo)">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+            >
+              <path
+                fill="currentColor"
+                d="M3 16.74L7.76 12L3 7.26L7.26 3L12 7.76L16.74 3L21 7.26L16.24 12L21 16.74L16.74 21L12 16.24L7.26 21zm9-3.33l4.74 4.75l1.42-1.42L13.41 12l4.75-4.74l-1.42-1.42L12 10.59L7.26 5.84L5.84 7.26L10.59 12l-4.75 4.74l1.42 1.42z"
+              />
+            </svg>
+          </button>
         </li>
       </ul>
     </section>
