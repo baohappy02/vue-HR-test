@@ -102,24 +102,27 @@ useEventListener(window, "hashchange", onHashChange);
     class="mx-auto lg:mt-10 lg:max-w-[80%] lg:rounded-lg lg:border border-cus3 bg-white p-5 pb-7 lg:p-6"
   >
     <header class="flex flex-col flex-wrap gap-2">
-      <h1 class="text-2xl font-bold text-center lg:text-left">
+      <h1 class="flex flex-col text-2xl font-bold text-center lg:flex-row lg:text-left">
         To Do List
 
-        <span v-show="todos.length" class="text-[12px]">
-          (<strong class="text-sm">{{ remaining }}</strong>
-          <span class="text-[12px]">{{ remaining === 1 ? " item" : " items" }} left</span
-          >)
-        </span>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <span v-show="todos.length" class="text-[12px]">
+            (<strong class="text-sm">{{ remaining }}</strong>
+            <span class="text-[12px]"
+              >{{ remaining === 1 ? " item" : " items" }} left</span
+            >)
+          </span>
 
-        <a
-          v-if="totalCreatedTodos"
-          href="/total-created"
-          class="text-[12px] font-normal text-purple underline underline-offset-2 ml-3"
-          >All todos created ({{ totalCreatedTodos }})</a
-        >
+          <a
+            v-if="totalCreatedTodos"
+            href="/total-created"
+            class="text-[12px] font-normal text-purple underline underline-offset-2 ml-3"
+            >All todos created ({{ totalCreatedTodos }})</a
+          >
+        </div>
       </h1>
 
-      <ul v-show="todos.length" class="flex items-center gap-3 ml-auto">
+      <ul v-show="todos.length" class="flex items-center gap-3 lg:ml-auto">
         <li v-for="(filter, key) in Object.values(VisibilityFilter)" :key="key">
           <a
             :href="'#' + filter"
@@ -161,7 +164,7 @@ useEventListener(window, "hashchange", onHashChange);
         </button>
       </div>
 
-      <ul class="grid grid-cols-3 gap-8 mt-3">
+      <ul class="grid grid-cols-1 gap-8 mt-3 lg:grid-cols-3">
         <li
           v-for="(todo, key) in filteredTodos"
           :key="key"

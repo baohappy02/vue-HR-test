@@ -35,7 +35,7 @@ onMounted(() => {
         class="flex flex-col flex-wrap gap-3 mt-3"
         v
       >
-        <ul class="grid grid-cols-3 gap-8 mt-3">
+        <ul class="grid grid-cols-1 gap-8 mt-3 lg:grid-cols-3">
           <li
             v-for="(createdTodo, key) in allCreatedTodos"
             :key="key"

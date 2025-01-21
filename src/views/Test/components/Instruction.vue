@@ -7,16 +7,14 @@
     </h1>
 
     <ol class="flex flex-col flex-wrap gap-2 pl-4 mt-3 list-decimal lg:pl-10">
-      <li>Make this page responsive (including these instructions).</li>
-      <li>
-        Create a new (separate) page that tracks the total number of created
-        to-do items on this page. The total number of created to-do items
-        displayed on the new page must not reset when I clear them on page 1.
-        They should be persistent.
+      <li class="text-sm lg:text-base">Make this page responsive (including these instructions).</li>
+      <li class="text-sm lg:text-base">
+        Create a new (separate) page that tracks the total number of created to-do items
+        on this page. The total number of created to-do items displayed on the new page
+        must not reset when I clear them on page 1. They should be persistent.
       </li>
-      <li>
-        Fix any of the generic design and formatting errors introduced in this
-        document.
+      <li class="text-sm lg:text-base">
+        Fix any of the generic design and formatting errors introduced in this document.
       </li>
     </ol>
   </section>
