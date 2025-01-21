@@ -1,25 +1,22 @@
 <!doctype html>
 <html lang="en" class="flex min-h-[100dvh] min-w-[100dvw]">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="<%= BASE_URL %>favicon.ico" />
 
-  <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+    <title>Vue HR test</title>
+  </head>
+  <body class="flex flex-col justify-center flex-auto bg-cus1">
+    <noscript>
+      <strong
+        >We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work
+        properly without JavaScript enabled. Please enable it to
+        continue.</strong
+      >
+    </noscript>
 
-  <title>Vue HR test</title>
-
-</head>
-<body class="flex flex-col justify-center flex-auto bg-cus1">
-  <noscript>
-    <strong
-      >We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work
-      properly without JavaScript enabled. Please enable it to
-      continue.</strong
-    >
-  </noscript>
-  
-  <div class="h-full" id="app">
-  </div>
-</body>
+    <div class="h-full" id="app" />
+  </body>
 </html>

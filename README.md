@@ -28,3 +28,4 @@
 - Split component + base layout
 - Update some basic UI todo app
 - Add new page for all created todo with timestamp
+- Add responsive for mobile
