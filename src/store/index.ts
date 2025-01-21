@@ -4,10 +4,12 @@ export interface Todo {
   id: number;
   title: string;
   completed: boolean;
+  createdAt: Date;
 }
 
 export interface State {
   todos: Todo[];
+  todosCreated: Todo[];
   visibility: VisibilityFilter;
   editedTodo: Todo | null;
 }
@@ -18,32 +20,43 @@ export enum VisibilityFilter {
   Completed = "completed",
 }
 
-const STORAGE_KEY = "vue-todomvc";
+const STORAGE_KEY = "vue-todos";
+const CREATED_STORAGE_KEY = "vue-todos-created";
 
 const filters: Record<VisibilityFilter, (todos: Todo[]) => Todo[]> = {
   [VisibilityFilter.All]: (todos: Todo[]) => todos,
   [VisibilityFilter.Active]: (todos: Todo[]) =>
     todos.filter((todo) => !todo.completed),
+  // not return todo.completed to show UI with all the todos
   [VisibilityFilter.Completed]: (todos: Todo[]) =>
-    todos.filter((todo) => todo.completed),
+    todos.filter((todo) => todo),
 };
 
 export default createStore<State>({
   state: {
     todos: [],
+    todosCreated: [],
     visibility: VisibilityFilter.All,
     editedTodo: null,
   },
   getters: {
     filteredTodos: (state) => filters[state.visibility](state.todos),
     remaining: (state) => filters[VisibilityFilter.Active](state.todos).length,
+    allCreatedTodos: (state) => state.todosCreated,
+    totalCreatedTodos: (state) => state.todosCreated.length,
   },
   mutations: {
     setTodos: (state, todos: Todo[]) => {
       state.todos = todos;
     },
+    setTodosCreated: (state, todosCreated: Todo[]) => {
+      state.todosCreated = todosCreated;
+    },
     addTodo: (state, todo: Todo) => {
-      state.todos.push(todo);
+      const newTodo = { ...todo, createdAt: new Date() };
+
+      state.todosCreated.push(newTodo);
+      state.todos.push(newTodo);
     },
     removeTodo: (state, todo: Todo) => {
       const index = state.todos.indexOf(todo);
@@ -85,7 +98,11 @@ export default createStore<State>({
     initializeTodos: ({ commit }) => {
       try {
         const todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        const todosCreated = JSON.parse(
+          localStorage.getItem(CREATED_STORAGE_KEY) || "[]"
+        );
         commit("setTodos", todos);
+        commit("setTodosCreated", todosCreated);
       } catch (error) {
         console.error("Failed to parse todos from localStorage:", error);
       }
@@ -93,6 +110,10 @@ export default createStore<State>({
     persistTodos: ({ state }) => {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state.todos));
+        localStorage.setItem(
+          CREATED_STORAGE_KEY,
+          JSON.stringify(state.todosCreated)
+        );
       } catch (error) {
         console.error("Failed to save todos to localStorage:", error);
       }
