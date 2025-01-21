@@ -6,6 +6,9 @@
 - Create a new (separate) page that tracks the total number of created to-do items on this page. The total number of created to-do items displayed on the new page must not reset when I clear them on page 1. They should be persistent.
 - Fix any of the generic design and formatting errors introduced in this document.
 
+## Deployed
+ - https://vue-hr-test.vercel.app
+
 ## List changes
 
  -- install dependencies
@@ -24,3 +27,4 @@
 - Add tailwindcss
 - Split component + base layout
 - Update some basic UI todo app
+- Add new page for all created todo with timestamp
